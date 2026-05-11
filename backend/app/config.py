@@ -1,5 +1,11 @@
 import os
 
+from dotenv import find_dotenv, load_dotenv
+
+
+# Load .env from current directory or parent directories if present.
+load_dotenv(find_dotenv(filename=".env", usecwd=True), override=False)
+
 
 def _int_env(name: str, default: int) -> int:
     raw_value = os.getenv(name)
