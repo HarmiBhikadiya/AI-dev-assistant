@@ -2789,6 +2789,10 @@
         return /<\s*html|<\s*style|<\s*script|function\s+updateEditor\s*\(|\.stat-bar|\.hero\s*\{|\.workspace\s*\{/i.test(text);
       }
 
+      function getApiBase() {
+        return ((apiUrlInput && apiUrlInput.value) || localStorage.getItem('qyx_apiUrl') || 'http://localhost:8000').replace(/\/$/, '');
+      }
+
       function normalizeEditorOnLoad() {
         if (looksLikeRestoredPageSource(editor.value || '')) {
           editor.value = '';
@@ -3035,7 +3039,8 @@
          API PING
       ═══════════════════════════════════════════════════════════════ */
       async function pingApi() {
-        const base = apiUrlInput.value.replace(/\/$/, '');
+        if (!apiUrlInput || !apiDot || !apiStatusText) return;
+        const base = getApiBase();
         try {
           const r = await fetch(`${base}/health`, { signal: AbortSignal.timeout(5000) });
           if (r.ok) {
@@ -3058,7 +3063,8 @@
           toast(getTranslation('toast_api_unreachable'), 'error');
         }
       }
-      document.getElementById('pingBtn').addEventListener('click', pingApi);
+      const pingBtn = document.getElementById('pingBtn');
+      if (pingBtn) pingBtn.addEventListener('click', pingApi);
 
       // Auto-ping on load
       setTimeout(pingApi, 800);
@@ -3072,7 +3078,7 @@
         const code = editor.value.trim();
         if (!code) { toast(getTranslation('toast_please_paste'), 'error'); return; }
 
-        const base = apiUrlInput.value.replace(/\/$/, '');
+        const base = getApiBase();
         const endpointMap = {
           analyze: '/analyze/',
           explain: '/explanation/',
@@ -3408,8 +3414,6 @@
 
         const cards = sugg.suggestions.length === 0
           ? `<div class="clean-state"><div class="clean-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></div><h3>${getTranslation('suggest_perfect_title')}</h3><p>${getTranslation('suggest_perfect_desc')}</p></div>`
-          : sugg.suggestions.map((s, i) => `
-          ? `<div class="clean-state"><div class="clean-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></div><h3>Perfect score!</h3><p>No improvement suggestions found.</p></div>`
           : sugg.suggestions.map((s, i) => {
 
             let exampleHtml = '';
@@ -3833,6 +3837,10 @@ int main() {
         langSelect.addEventListener('change', e => {
           setAppLanguage(e.target.value);
         });
+        // Also listen for input for immediate responsiveness in some browsers
+        langSelect.addEventListener('input', e => {
+          setAppLanguage(e.target.value);
+        });
       }
 
       // Initialize language
@@ -3843,11 +3851,13 @@ int main() {
       renderFavorites();
 
       // Save API URL
-      apiUrlInput.addEventListener('change', () => {
-        localStorage.setItem('qyx_apiUrl', apiUrlInput.value);
-      });
-      const savedUrl = localStorage.getItem('qyx_apiUrl');
-      if (savedUrl) apiUrlInput.value = savedUrl;
+      if (apiUrlInput) {
+        apiUrlInput.addEventListener('change', () => {
+          localStorage.setItem('qyx_apiUrl', apiUrlInput.value);
+        });
+        const savedUrl = localStorage.getItem('qyx_apiUrl');
+        if (savedUrl) apiUrlInput.value = savedUrl;
+      }
 
       /* ═══════════════════════════════════════════════════════════════
          DIGEST SUBSCRIBE
@@ -3858,7 +3868,7 @@ int main() {
         const btn = document.getElementById('digestBtn');
         btn.disabled = true;
         btn.textContent = 'Subscribing…';
-        const base = apiUrlInput.value.replace(/\/$/, '');
+        const base = getApiBase();
         try {
           const r = await fetch(`${base}/subscribe/`, {
             method: 'POST',
