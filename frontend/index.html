@@ -2728,11 +2728,8 @@
 
       const savedTheme = localStorage.getItem('qyx_theme');
 
-      const initialTheme = savedTheme
-       ? savedTheme
-       : window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
+      // Default to dark if user has not chosen a theme
+      const initialTheme = savedTheme || 'dark';
 
       document.documentElement.setAttribute('data-theme', initialTheme);
       setThemeIcon(initialTheme);
