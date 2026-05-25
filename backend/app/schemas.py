@@ -15,6 +15,7 @@ from .schema_validators import (
     validate_stored_code,
     validate_stored_result_json,
 )
+from pydantic import BaseModel, Field, field_validator
 
 
 class CodeRequest(BaseModel):
@@ -38,7 +39,6 @@ class CodeRequest(BaseModel):
         return validate_language_hint(v)
 
 
-# ── Explanation ────────────────────────────────────────────────────────────────
 class ExplanationResponse(BaseModel):
     language: str
     summary: str
@@ -51,15 +51,14 @@ class ExplanationResponse(BaseModel):
     complexity_risk: str
 
 
-# ── Debugging ─────────────────────────────────────────────────────────────────
 class Issue(BaseModel):
     type: str
     line: int | None
     description: str
     suggestion: str
-    severity: str          # "error" | "warning" | "info"
+    severity: str
     code_snippet: str | None = None
-    code_context: str | None = None  # NEW: Formatted code with line numbers
+    code_context: str | None = None
 
 
 class DebuggingResponse(BaseModel):
@@ -72,15 +71,14 @@ class DebuggingResponse(BaseModel):
     code: str
 
 
-# ── Suggestions ───────────────────────────────────────────────────────────────
 class Suggestion(BaseModel):
     category: str
     description: str
-    line_number: int | None = None              # NEW
-    line_range: list[int] | None = None         # NEW (for multi-line issues)
+    line_number: int | None = None
+    line_range: list[int] | None = None
     code_context: str | None = None
     example: str | None = None
-    priority: str          # "high" | "medium" | "low"
+    priority: str
 
 
 class SuggestionsResponse(BaseModel):
@@ -90,7 +88,6 @@ class SuggestionsResponse(BaseModel):
     next_step: str
 
 
-# ── Full Analysis ─────────────────────────────────────────────────────────────
 class AnalyzeResponse(BaseModel):
     provider: str
     model: str
@@ -100,7 +97,26 @@ class AnalyzeResponse(BaseModel):
     analysis_time_ms: float | None = None
 
 
-# ── Weekly Digest / Subscription ───────────────────────────────
+class ZipAnalyzeFileResult(BaseModel):
+    filename: str
+    language: str
+    size_bytes: int
+    analysis: AnalyzeResponse
+
+
+class ZipAnalyzeResponse(BaseModel):
+    provider: str
+    model: str
+    file_count: int
+    total_size_bytes: int
+    overall_project_score: int
+    grade: str
+    summary: str
+    files: list[ZipAnalyzeFileResult]
+    skipped_files: list[str] = Field(default_factory=list)
+    analysis_time_ms: float | None = None
+
+
 class SubscribeRequest(BaseModel):
     email: str
 
@@ -125,7 +141,6 @@ class UnsubscribeRequest(BaseModel):
     token: str
 
 
-# ── Health ────────────────────────────────────────────────────────────────────
 class HealthResponse(BaseModel):
     status: str
     version: str
@@ -213,6 +228,7 @@ class FavoriteRecord(BaseModel):
     id: int
     title: str
     action: str
+class ShareCreateRequest(BaseModel):
     code: str
     result_json: str
     created_at: str

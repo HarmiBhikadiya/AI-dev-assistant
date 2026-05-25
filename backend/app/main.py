@@ -15,6 +15,7 @@ from contextlib import asynccontextmanager
 
 from .routers import explanation, debugging, suggestions, analyze, subscribe
 from .routers import auth, chat, share, user_data
+from .services import database
 from .services.scheduler import start_scheduler, stop_scheduler
 from .schemas import HealthResponse
 
@@ -48,6 +49,7 @@ def rate_limit_headers(remaining: int) -> dict[str, str]:
 # ── Lifespan ──────────────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await database.init_db()
     print("🚀 QyverixAI backend starting…")
     start_scheduler()
     yield
@@ -136,7 +138,17 @@ async def root():
         "status": "ok",
         "version": "3.0.0",
         "message": "QyverixAI API is running.",
-        "endpoints": ["/explanation/", "/debugging/", "/suggestions/", "/analyze/"],
+        "endpoints": [
+            "/explanation/",
+            "/debugging/",
+            "/suggestions/",
+            "/analyze/",
+            "/subscribe/",
+            "/share/",
+            "/auth/",
+            "/chat/",
+            "/user/",
+        ],
     }
 
 
@@ -146,7 +158,17 @@ async def health_check():
         "status": "ok",
         "version": "3.0.0",
         "message": "QyverixAI is healthy",
-        "endpoints": ["/explanation/", "/debugging/", "/suggestions/", "/analyze/"],
+        "endpoints": [
+            "/explanation/",
+            "/debugging/",
+            "/suggestions/",
+            "/analyze/",
+            "/subscribe/",
+            "/share/",
+            "/auth/",
+            "/chat/",
+            "/user/",
+        ],
     }
 
 
