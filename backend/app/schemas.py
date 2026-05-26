@@ -15,8 +15,6 @@ from .schema_validators import (
     validate_stored_code,
     validate_stored_result_json,
 )
-from pydantic import BaseModel, Field, field_validator
-
 
 class CodeRequest(BaseModel):
     code: str
@@ -228,7 +226,6 @@ class FavoriteRecord(BaseModel):
     id: int
     title: str
     action: str
-class ShareCreateRequest(BaseModel):
     code: str
     result_json: str
     created_at: str
