@@ -3862,7 +3862,7 @@
         historyList.innerHTML = history.map(h => buildStoredListItemHtml(h)).join('');
       }
 
-      zdocument.getElementById('clearHistoryBtn').addEventListener('click', () => {
+      document.getElementById('clearHistoryBtn').addEventListener('click', () => {
         if (!window.confirm('Are you sure you want to clear your history? This cannot be undone.')) return;
         history = [];
         localStorage.removeItem('qyx_history');
