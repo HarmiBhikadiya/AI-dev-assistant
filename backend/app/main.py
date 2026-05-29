@@ -14,8 +14,18 @@ from collections import defaultdict
 import logging
 from contextlib import asynccontextmanager
 
-from .routers import explanation, debugging, suggestions, analyze, subscribe, history
-from .routers import auth, chat, share, user_data
+from .routers import (
+    analyze,
+    auth,
+    chat,
+    debugging,
+    explanation,
+    history,
+    share,
+    subscribe,
+    suggestions,
+    user_data,
+)
 from .services import database
 from .services.scheduler import start_scheduler, stop_scheduler
 from .database import Base, engine
@@ -54,11 +64,12 @@ def rate_limit_headers(remaining: int) -> dict[str, str]:
 async def lifespan(app: FastAPI):
     await database.init_db()
     print("🚀 QyverixAI backend starting…")
+    logging.getLogger(__name__).info("🚀 QyverixAI backend starting…")
     Base.metadata.create_all(bind=engine)
     start_scheduler()
     yield
     stop_scheduler()
-    print("🛑 QyverixAI backend shutting down…")
+    logging.getLogger(__name__).info("🛑 QyverixAI backend shutting down…")
 
 
 # ── App ───────────────────────────────────────────────────────────────────────
@@ -144,6 +155,9 @@ async def root():
         "version": "3.0.0",
         "message": "QyverixAI API is running.",
         "endpoints": [
+            "/auth/signup",
+            "/auth/login",
+            "/auth/me",
             "/explanation/",
             "/debugging/",
             "/suggestions/",
@@ -153,6 +167,8 @@ async def root():
             "/auth/",
             "/chat/",
             "/user/",
+            "/analyze/zip/",
+            "/history/",
         ],
     }
 
@@ -164,6 +180,9 @@ async def health_check():
         "version": "3.0.0",
         "message": "QyverixAI is healthy",
         "endpoints": [
+            "/auth/signup",
+            "/auth/login",
+            "/auth/me",
             "/explanation/",
             "/debugging/",
             "/suggestions/",
@@ -173,6 +192,8 @@ async def health_check():
             "/auth/",
             "/chat/",
             "/user/",
+            "/analyze/zip/",
+            "/history/",
         ],
     }
 
